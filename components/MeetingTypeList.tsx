@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarPlus2, MergeIcon, PlayCircle, PlusIcon } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,7 @@ import { useUser } from "@clerk/nextjs";
 import { Call, useStreamVideoClient } from "@stream-io/video-react-sdk";
 
 const MeetingTypeList = () => {
+  const { toast } = useToast();
   const router = useRouter();
   const [meetingState, setMeetingState] = useState<
     "isScheduleMeeting" | "isJoiningMeeting" | "isInstantMeeting" | undefined
@@ -31,6 +33,12 @@ const MeetingTypeList = () => {
     if (!client || !user) return;
 
     try {
+      if (!values.dateTime) {
+        toast({
+          title: "Please select a date and time",
+        });
+        return;
+      }
       const id = crypto.randomUUID();
       const call = client.call("default", id);
 
@@ -53,8 +61,17 @@ const MeetingTypeList = () => {
       setCallDetails(call);
 
       if (!values.description) router.push(`/meeting/${call.id}`);
+
+      toast({
+        title: "Meeting Created",
+        description: "Meeting has been created successfully",
+      });
     } catch (error) {
       console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to create meeting",
+      });
     }
   };
   return (
